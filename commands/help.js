@@ -21,7 +21,11 @@ module.exports = {
 
                         for (const commandName in cog.commands) {
                             const command = cog.commands[commandName];
-                            commandList.push(`${config.prefix}${command.name}: ${command.description || 'no description available.'}`);
+                            commandList.push(
+                                `${config.prefix}${command.name}${
+                                    command.aliases ? ` (${command.aliases.join(', ')})` : ''
+                                }: ${command.description || 'no description available.'}`
+                            );
                         }
                     } catch (err) {
                         console.error(`failed to load cog ${cogName}:`, err);

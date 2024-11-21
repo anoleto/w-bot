@@ -7,6 +7,7 @@ module.exports = {
     commands: {
         lastfm: {
             name: 'lastfm',
+            aliases: ['fm', 'np'],
             description: 'fetches the latest track or currently playing track of a last.fm user.',
             async run(message, args) {
                 const username = args;
