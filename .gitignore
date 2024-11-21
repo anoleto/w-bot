@@ -1,0 +1,7 @@
+config.js
+.wwebjs_auth
+.wwebjs_cache
+.data
+
+node_modules
+package-lock.json

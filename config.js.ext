@@ -1,0 +1,9 @@
+module.exports = {
+    prefix: '?!',
+    ownerId: ['', ''],
+    devGroup: ['', ''],
+    debug: false,
+
+    lastfmApiKey: '',
+    huggingFaceKey: ''
+};
