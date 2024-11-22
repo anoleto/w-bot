@@ -18,11 +18,13 @@ module.exports = {
                     try {
                         // TODO: improve these
                         const cog = require(path.join(__dirname, '../commands', file));
+                        const cogDescription = cog.description || 'no description available.';
+                        commandList.push(`**${cogName}**: ${cogDescription}`);
 
                         for (const commandName in cog.commands) {
                             const command = cog.commands[commandName];
                             commandList.push(
-                                `${config.prefix}${command.name}${
+                                `- ${config.prefix}${command.name}${
                                     command.aliases ? ` (${command.aliases.join(', ')})` : ''
                                 }: ${command.description || 'no description available.'}`
                             );

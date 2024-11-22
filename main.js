@@ -79,6 +79,10 @@ class Bot {
                 );
 
                 if (command) {
+                    if (command.owner && !config.ownerId.includes(message.from)) {
+                        return await message.reply('you do not have permission to run this command!');
+                    }
+
                     try {
                         await command.run(message, args.join(' ').trim());
                     } catch (err) {

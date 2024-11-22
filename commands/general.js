@@ -47,6 +47,29 @@ module.exports = {
                     await message.reply('an error occurred while fetching the avatar.');
                 }
             }
+        },
+        userinfo: {
+            name: 'userinfo',
+            aliases: ['ui', 'whois'],
+            description: 'returns user info of a given user',
+            async run(message) {
+                const userId = (message.mentionedIds[0] || message.from).includes('@c.us')
+                ? message.mentionedIds[0] || message.from
+                : `${message.mentionedIds[0] || message.from}@c.us`;
+
+                const contact = await message.client.getContactById(userId);
+
+                const id = contact.id._serialized || '?';
+                const pushname = contact.pushname || '?';
+                const about = (await contact.getAbout()) || '?';
+                
+                const userInfoMessage = `**user info**\n` +
+                `*ID:* \`${id}\`\n` +
+                `*display name:* ${pushname}\n` +
+                `*about:* ${about}\n`;
+
+                await message.reply(userInfoMessage);
+            }
         }
     }
 };

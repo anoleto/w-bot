@@ -89,6 +89,17 @@ module.exports = {
                     }
                 }
             }
+        },
+        resetai: {
+            name: 'resetai',
+            aliases: ['rst', 'reset'],
+            description: 'restart ai chat history',
+            async run(message) {
+                const chat = await message.getChat();
+                chatHistory.delete(chat.id._serialized);
+
+                await message.reply('ai chat history has been resetted.')
+            }
         }
     }
 };
