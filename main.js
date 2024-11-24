@@ -7,7 +7,10 @@ const config = require('./config');
 class Bot {
     constructor() {
         this.client = new Client({
-            authStrategy: new LocalAuth({ clientId: 'clientId' })
+            authStrategy: new LocalAuth({ clientId: 'clientId' }),
+            puppeteer: {
+                executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+            }
         });
         this.cogs = {};
         this.commands = new Map();
@@ -21,6 +24,7 @@ class Bot {
         for (const file of cogFiles.filter(file => file.endsWith('.js'))) {
             const cogName = file.replace('.js', '');
             try {
+                // maybe add category folders..
                 const cog = require(`./commands/${file}`);
                 this.cogs[cogName] = cog;
 
