@@ -48,13 +48,13 @@ module.exports = {
                     this.loadCommands(cog);
                     
                     await message.reply(`successfully loaded cog: ${cogName}`);
+                    console.log(`loaded cog: ${cogName}`)
                 } catch (err) {
                     console.error(`failed to load cog ${cogName}:`, err);
                     await message.reply(`failed to load cog ${cogName}: ${err.message}`);
                 }
             }
         },
-
         reloadcog: {
             name: 'reloadcog',
             description: 'reload a cog module',
@@ -85,13 +85,13 @@ module.exports = {
                     this.loadCommands(newCog);
                     
                     await message.reply(`successfully reloaded cog: ${cogName}`);
+                    console.log(`reloaded cog: ${cogName}`)
                 } catch (err) {
                     console.error(`failed to reload cog ${cogName}:`, err);
                     await message.reply(`failed to reload cog ${cogName}: ${err.message}`);
                 }
             }
         },
-
         stopcog: {
             name: 'stopcog',
             description: 'stop and unload a cog module',
@@ -117,6 +117,7 @@ module.exports = {
                     delete require.cache[require.resolve(path.join(__dirname, `${cogName}.js`))];
                     
                     await message.reply(`successfully stopped cog: ${cogName}`);
+                    console.log(`stopped cog: ${cogName}`)
                 } catch (err) {
                     console.error(`failed to stop cog ${cogName}:`, err);
                     await message.reply(`failed to stop cog ${cogName}: ${err.message}`);
