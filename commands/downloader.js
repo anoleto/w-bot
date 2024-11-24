@@ -26,7 +26,7 @@ const downloadYouTube = async (url) => {
 const downloadTikTok = async (url) => {
     try {
         const outputPath = path.join(__dirname, '../.data', `tt-${Date.now()}.mp4`);
-        const command = `yt-dlp -f "h264_540p_894688-1" -o "${outputPath}" "${url}"`;
+        const command = `yt-dlp -S "vcodec:h264" -o "${outputPath}" "${url}"`;
         await execAsync(command);
 
         return outputPath;
