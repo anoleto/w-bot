@@ -36,6 +36,7 @@ still learning js tho.. tyoe shii.
 **links:**
 - support me on ko-fi: https://ko-fi.com/anolet
 - github: https://github.com/anoleto
+- source code: https://github.com/anoleto/w-bot
 `.trim();
 
                 await message.reply(infoMessage);

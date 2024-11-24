@@ -23,6 +23,18 @@ const downloadYouTube = async (url) => {
     }
 };
 
+const downloadTikTok = async (url) => {
+    try {
+        const outputPath = path.join(__dirname, '../.data', `tt-${Date.now()}.mp4`);
+        const command = `yt-dlp -f "h264_540p_894688-1" -o "${outputPath}" "${url}"`;
+        await execAsync(command);
+
+        return outputPath;
+    } catch (error) {
+        throw new Error('failed to download tiktok video');
+    }
+};
+
 module.exports = {
     name: 'downloader',
     description: "to download videos or audio from youtube or tiktok (Not finished)",
@@ -45,22 +57,15 @@ module.exports = {
                     if (url.includes('youtube.com') || url.includes('youtu.be')) {
                         filePath = await downloadYouTube(url);
                     } else if (url.includes('tiktok.com')) {
-                        // TODO
+                        filePath = await downloadTikTok(url);
                     } else {
                         return message.reply('unsupported platform. Only tiktok and youtube are supported.');
                     }
 
-                    try {
-                        const media = MessageMedia.fromFilePath(filePath);
-                        await message.reply(media, undefined, { caption: 'here is your video!' });
-                        await fs.unlink(filePath);
-                        await replyMsg.delete(true);
-                    }
-                    catch {
-                        await message.reply('the file might be too big to send!, canceling.')
-                        await fs.unlink(filePath);
-                        await replyMsg.delete(true);
-                    }
+                    const media = MessageMedia.fromFilePath(filePath);
+                    await message.reply(media, undefined, { caption: 'here is your video!' });
+                    await fs.unlink(filePath);
+                    await replyMsg.delete(true);
                 } catch (error) {
                     console.error(error);
                     await replyMsg.reply('failed to download video. please try again later.');

@@ -64,7 +64,22 @@ class Bot {
         });
 
         this.client.on('ready', () => {
-            console.log('now connected!');
+            const timestamp = new Date().toLocaleString();
+            // should i make it look cooler more?
+            console.log(`
+                ==========================
+                       Client Ready
+                ==========================
+                
+                client info:
+                - name     : ${this.client.info.pushname}
+                - id       : ${this.client.info.wid._serialized}
+                - platform : ${this.client.info.platform}
+
+                ${timestamp} now connected!
+                
+                ==========================
+            `);
         });
 
         this.client.on('message_create', async (message) => {
