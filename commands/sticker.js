@@ -1,9 +1,58 @@
 const { MessageMedia } = require('whatsapp-web.js');
-const fs = require('fs');
 const fsPromises = require('fs').promises;
 const path = require('path');
 const sharp = require('sharp');
 const config = require('../config');
+const { exec } = require('child_process');
+
+async function _prepare() {
+    const tempDir = path.join(__dirname, '..', '.data');
+    await fsPromises.mkdir(tempDir, { recursive: true });
+    return tempDir;
+}
+
+async function _save(media, tempDir) {
+    const isGif = media.mimetype === 'image/gif';
+    const isVideo = media.mimetype.startsWith('video/');
+    const inputExtension = isGif ? 'gif' : isVideo ? 'mp4' : 'png';
+
+    const inputFilename = `input_${Date.now()}.${inputExtension}`;
+    const outputFilename = `sticker_${Date.now()}.webp`;
+
+    const inp = path.join(tempDir, inputFilename);
+    const out = path.join(tempDir, outputFilename);
+
+    await fsPromises.writeFile(inp, media.data, 'base64');
+
+    return { inp, out };
+}
+
+async function _convert(mimetype, inputFilepath, outputFilepath) {
+    if (mimetype === 'image/gif' || mimetype.startsWith('video/')) {
+        await new Promise((resolve, reject) => {
+            exec(
+                `ffmpeg -i ${inputFilepath} ` +
+                `-vf "scale=512:512:force_original_aspect_ratio=decrease,` + 
+                `pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000" ` +
+                `-c:v libwebp -loop 0 -preset default -an -vsync 0 -s 512:512 ` +
+                `${outputFilepath}`,
+
+                (error) => 
+                    (error ? 
+                        reject(error) : 
+                        resolve())
+            );
+        });
+    } else {
+        await sharp(inputFilepath)
+            .resize(512, 512, {
+                fit: 'contain',
+                background: { r: 0, g: 0, b: 0, alpha: 0 },
+            })
+            .webp({ quality: 80 })
+            .toFile(outputFilepath);
+    }
+}
 
 module.exports = {
     name: 'sticker',
@@ -19,65 +68,21 @@ module.exports = {
                 }
 
                 try {
-                    // TODO: put these stupids to a new func
-                    let media;
-                    
-                    if (message.hasQuotedMsg) {
-                        const quotedMsg = await message.getQuotedMessage();
-                        media = await quotedMsg.downloadMedia();
-                    } else {
-                        media = await message.downloadMedia();
-                    }
+                    const media = message.hasQuotedMsg
+                        ? await (await message.getQuotedMessage()).downloadMedia()
+                        : await message.downloadMedia();
+                    const tempDir = await _prepare();
 
-                    if (!media.mimetype.startsWith('image/')) {
-                        await message.reply('please send a valid image or gif.');
-                        return;
-                    }
+                    // input or output file
+                    const { inp, out } = await _save(media, tempDir);
+                    await _convert(media.mimetype, inp, out);
 
-                    const tempDir = path.join(__dirname, '..', '.data');
-                    await fsPromises.mkdir(tempDir, { recursive: true });
-
-                    const isGif = media.mimetype === 'image/gif';
-                    const fileExtension = isGif ? 'gif' : 'webp';
-                    const inputFilename = `input_${Date.now()}.${isGif ? 'gif' : 'png'}`;
-                    const outputFilename = `sticker_${Date.now()}.${fileExtension}`;
-                    const inputFilepath = path.join(tempDir, inputFilename);
-                    const outputFilepath = path.join(tempDir, outputFilename);
-
-                    await fsPromises.writeFile(inputFilepath, media.data, 'base64');
-
-                    if (isGif) {
-                        await sharp(inputFilepath, { animated: true })
-                            .resize(512, 512, {
-                                fit: 'contain',
-                                background: { r: 0, g: 0, b: 0, alpha: 0 }
-                            })
-                            .webp({ quality: 80, nearLossless: true })
-                            .toFile(outputFilepath);
-                    } else {
-                        await sharp(inputFilepath)
-                            .resize(512, 512, {
-                                fit: 'contain',
-                                background: { r: 0, g: 0, b: 0, alpha: 0 }
-                            })
-                            .webp({ quality: 80 })
-                            .toFile(outputFilepath);
-                    }
-
-                    const stickerMedia = MessageMedia.fromFilePath(outputFilepath);
-                    await message.reply(stickerMedia, undefined, { 
+                    const sticker = MessageMedia.fromFilePath(out);
+                    await message.reply(sticker, undefined, { 
                         sendMediaAsSticker: true 
                     });
 
-                    setTimeout(() => {
-                        try {
-                            fs.unlinkSync(inputFilepath);
-                            fs.unlinkSync(outputFilepath);
-                        } catch (unlinkError) {
-                            console.warn('could not delete temporary files:', unlinkError);
-                        }
-                    }, 5000);
-
+                    await fsPromises.unlink(inp);
                 } catch (error) {
                     console.error(error);
                     await message.reply('an error occurred while creating the sticker.');
