@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 module.exports = {
-    prefix: 'k!',
+    prefix: process.env.PREFIX,
     ownerId: process.env.OWNER_IDS.split(','),
     devGroup: process.env.DEV_GROUPS.split(','),
     debug: process.env.DEBUG === 'true',
